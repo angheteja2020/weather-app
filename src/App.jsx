@@ -10,17 +10,45 @@
 
 import { useState } from "react";
 import SearchBar from './components/SearchBar';
+import { getWeatherData } from "./services/weatherAPI";
+import LoadingSpinner from "./components/LoadingSpinner";
+import ErrorDisplay from "./components/ErrorDisplay";
+import WeatherDisplay from "./components/WeatherDisplay";
 
 function App() {
-  // Estado para almacenar la ciudad actual buscada
+
+  const [weatherData, setWeatherData] = useState(null);
+  const [loading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [city, setCity] = useState('');
 
   // Función que recibe la ciudad desde SearchBar
-  const handleSearch = (cityName) => {
-    console.log('Ciudad recibida en App:', cityName);
-    // Actualiza el estado con la nueva ciudad
-    setCity(cityName);
-    // Aquí más adelante haremos la llamada a la API
+  const handleSearch = async (cityName) => {
+    setCity(cityName)
+    setIsLoading(true);
+    setError(null);
+    setWeatherData(null);
+
+    try {
+      console.log('Buscando clima para:', cityName);
+      
+      // Llamar al servicio de API
+      const data = await getWeatherData(cityName);
+      
+      console.log('Datos procesados:', data);
+      
+      // Actualizar el estado con los datos obtenidos
+      setWeatherData(data);
+      
+    } catch (err) {
+      // Manejar errores
+      console.error('Error al buscar clima:', err);
+      setError(err.message || 'Error al obtener el clima. Intenta nuevamente.');
+      
+    } finally {
+      // Siempre desactivar el loading
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -43,31 +71,18 @@ function App() {
         ☀️ Weather App
       </h1>
 
-      {/* Pasamos la función handleSearch como prop al SearchBar */}
       <SearchBar onSearch={handleSearch} />
 
-      {/* Mostramos la ciudad actual si existe */}
-      {city && (
-        <div style={{
-          backgroundColor: 'rgba(255,255,255,0.2)',
-          padding: '30px 50px',
-          borderRadius: '20px',
-          color: 'white',
-          textAlign: 'center',
-          marginTop: '20px',
-          backdropFilter: 'blur(10px)'
-        }}>
-          <h2 style={{ fontSize: '28px', marginBottom: '10px' }}>
-            Ciudad seleccionada:
-          </h2>
-          <p style={{ fontSize: '36px', fontWeight: 'bold', margin: 0 }}>
-            📍 {city}
-          </p>
-        </div>
+      {loading && <LoadingSpinner />}
+
+      {error && !loading && <ErrorDisplay message={error} />}
+
+      {weatherData && !loading && !error && (
+        <WeatherDisplay weather={weatherData} />
       )}
 
-      {/* Mensaje inicial si no hay ciudad */}
-      {!city && (
+      {/* Mensaje inicial */}
+      {!weatherData && !loading && !error && (
         <p style={{
           color: 'white',
           fontSize: '18px',
@@ -75,7 +90,7 @@ function App() {
           marginTop: '20px',
           textAlign: 'center'
         }}>
-          👆 Busca una ciudad para ver su clima
+          👆 Busca una ciudad para ver su clima actual
         </p>
       )}
     </div>

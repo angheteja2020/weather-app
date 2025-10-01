@@ -9,8 +9,19 @@
 // - DEFAULT_CITY: ciudad por defecto al cargar
 // - ENDPOINTS: rutas de los endpoints
 
-import { useState } from 'react';
 
-const API_KEY = '';
-const BASE_URL = '';
-const UNITS = 'metric'; // Para Celsius
+const apiKey = import.meta.env.VITE_OPENWEATHER_API_KEY;
+
+export const API_CONFIG = {
+    KEY: apiKey,
+    BASE_URL: 'https://api.openweathermap.org/data/2.5',
+    ENDPOINTS: {
+        CURRENT_WEATHER: '/weather',
+        FORECAST: '/forecast'
+    }
+};
+
+export const APP_CONFIG = {
+    UNITS: 'metric',
+    DEFAULT_CITY: 'Phoenix'
+}
